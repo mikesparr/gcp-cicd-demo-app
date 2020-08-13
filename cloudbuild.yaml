@@ -1,6 +1,14 @@
 # build image and push to GCR
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/devops-pipeline-demo/cicd-demo-app', '.']
+  id: Build
+  args:
+  - 'build'
+  - '-t'
+  - 'gcr.io/$PROJECT_ID/cicd-demo-app:$SHORT_SHA'
+  - '.'
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/devops-pipeline-demo/cicd-demo-app']
+  id: Push
+  args:
+  - 'push'
+  - 'gcr.io/$PROJECT_ID/cicd-demo-app:$SHORT_SHA'
