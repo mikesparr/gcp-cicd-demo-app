@@ -1,0 +1,54 @@
+steps:
+# Build image and push to GCR
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build
+  args:
+  - 'build'
+  - '-t'
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:v$_PR_NUMBER'
+  - '.'
+# TODO: look into [images]
+- name: 'gcr.io/cloud-builders/docker'
+  id: Push
+  args:
+  - 'push'
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:v$_PR_NUMBER'
+
+# Access the id_github file from Secret Manager
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=github-ssh-key > /root/.ssh/id_github' ]
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+# Set up git with key and domain
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    chmod 600 /root/.ssh/id_github
+    cat <<EOF >/root/.ssh/config
+    Hostname github.com
+    IdentityFile /root/.ssh/id_github
+    EOF
+    ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+# Connect to the repository
+- name: 'gcr.io/cloud-builders/git'
+  args:
+  - clone
+  - '--depth'
+  - '1'
+  - git@github.com:mikesparr/gcp-cicd-demo-app
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+# Create review app Kustomize layer
+
+# Push updated layer to review branch
