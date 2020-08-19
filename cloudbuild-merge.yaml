@@ -58,7 +58,7 @@ steps:
     echo "Updating image tag version ..."
     cd gcp-cicd-demo-config
     ls
-    sed -i "s|newTag: .*|newTag: $SHORT_SHA|" demo-app/overlays/review/kustomization.yaml
+    sed -i "s|newTag: .*|newTag: $SHORT_SHA|" demo-app/overlays/production/kustomization.yaml
     echo "Removing review app ..."
     rm apps/demo-app-review.yaml
     echo "Pushing changes to git config repo ..."
