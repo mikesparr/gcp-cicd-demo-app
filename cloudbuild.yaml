@@ -47,43 +47,23 @@ steps:
   - name: 'ssh'
     path: /root/.ssh
 
-# Connect to the repository
-- name: 'gcr.io/cloud-builders/git'
-  args:
-  - clone
-  - '--depth'
-  - '1'
-  - git@github.com:mikesparr/gcp-cicd-demo-config
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
-
-# Create review app Kustomize layer
-- name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
-    echo "Updating image tag version ..."
-    cd gcp-cicd-demo-config
-    ls
-    sed -i "s|newTag: latest|newTag: $SHORT_SHA|" demo-app/overlays/develop/kustomization.yaml
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
-
-# Push updated layer to review branch
+# Edit Kustomize layer in config repo and push changes
 - name: gcr.io/cloud-builders/git
   entrypoint: 'bash'
   args:
   - '-c'
   - |
+    echo "Cloning repo ..."
+    git clone --depth 1 git@github.com:mikesparr/gcp-cicd-demo-config
+    echo "Updating image tag version ..."
+    cd gcp-cicd-demo-config
+    ls
+    sed -i "s|newTag: latest|newTag: $SHORT_SHA|" demo-app/overlays/develop/kustomization.yaml
     echo "Pushing changes to git config repo ..."
     git config --global user.name mikesparr
     git config --global user.email msparr@gmail.com
     git add -A
     git commit -m "Updated with build ${BUILD_ID} from ${REPO_NAME} commit ${COMMIT_SHA}"
-    git remote set-url origin 'https://github.com/mikesparr/gcp-cicd-demo-config'
     git push origin master
   volumes:
   - name: 'ssh'
