@@ -79,6 +79,8 @@ steps:
   - '-c'
   - |
     echo "Pushing changes to git config repo ..."
+    git config --global user.name mikesparr
+    git config --global user.email msparr@gmail.com
     git add -A
     git commit -m "Updated with build ${BUILD_ID} from ${REPO_NAME} commit ${COMMIT_SHA}"
     git remote set-url origin 'https://github.com/mikesparr/gcp-cicd-demo-config'
