@@ -73,7 +73,7 @@ steps:
     path: /root/.ssh
 
 # Push updated layer to review branch
-- name: gcr.io/cloud-builders/gcloud
+- name: gcr.io/cloud-builders/git
   entrypoint: 'bash'
   args:
   - '-c'
