@@ -67,7 +67,10 @@ steps:
     echo "Updating image tag version ..."
     cd gcp-cicd-demo-config
     ls
-    sed -i "" "s|newTag: latest|newTag: $SHORT_SHA|" demo-app/overlays/develop/kustomization.yaml
+    sed -i "s|newTag: latest|newTag: $SHORT_SHA|" demo-app/overlays/develop/kustomization.yaml
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
 
 # Push updated layer to review branch
 - name: gcr.io/cloud-builders/gcloud
@@ -80,3 +83,6 @@ steps:
     git commit -m "Updated with build ${BUILD_ID} from ${REPO_NAME} commit ${COMMIT_SHA}"
     git remote set-url origin 'https://github.com/mikesparr/gcp-cicd-demo-config'
     git push origin master
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
