@@ -14,14 +14,14 @@ steps:
   args:
   - 'build'
   - '-t'
-  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:v$_PR_NUMBER'
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
   - '.'
 # TODO: look into [images]
 - name: 'gcr.io/cloud-builders/docker'
   id: Push
   args:
   - 'push'
-  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:v$_PR_NUMBER'
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
 
 # Access the id_github file from Secret Manager
 - name: gcr.io/cloud-builders/gcloud
@@ -58,9 +58,9 @@ steps:
     echo "Updating image tag version ..."
     cd gcp-cicd-demo-config
     ls
-    sed -i "s|newTag: .*|newTag: v$_PR_NUMBER|" demo-app/overlays/review/kustomization.yaml
-    echo "Creating review app ..."
-    cp templates/demo-app-review.yaml apps/
+    sed -i "s|newTag: .*|newTag: $SHORT_SHA|" demo-app/overlays/review/kustomization.yaml
+    echo "Removing review app ..."
+    rm apps/demo-app-review.yaml
     echo "Pushing changes to git config repo ..."
     git config --global user.name mikesparr
     git config --global user.email msparr@gmail.com
