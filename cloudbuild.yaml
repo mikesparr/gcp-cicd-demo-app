@@ -1,5 +1,14 @@
-# build image and push to GCR
+# TODO: 
+# 1. [done] Cloud Build dynamically edit config repo Kustomize layer and pushes (optional manual judgement stage)
+# 2. [done] Add Kustomize patch for Ingress per env (to change subdomain host)
+# 3. Add Github Action to delete file and commit/push on master PR merge trigger (time permitting)
+# 4. Add database example
+# 5. Add test data Job with initContainer to load test data from bucket (time permitting)
+# 6. Change test domain nameservers to use Cloud DNS (future)
+# 7. Enhance CI script to dynamically add DNS CNAME entry per review app (future)
+
 steps:
+# Build image and push to GCR
 - name: 'gcr.io/cloud-builders/docker'
   id: Build
   args:
@@ -7,8 +16,55 @@ steps:
   - '-t'
   - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
   - '.'
+# TODO: look into [images]
 - name: 'gcr.io/cloud-builders/docker'
   id: Push
   args:
   - 'push'
   - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
+
+# Access the id_github file from Secret Manager
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=github-ssh-key > /root/.ssh/id_github' ]
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+# Set up git with key and domain
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    chmod 600 /root/.ssh/id_github
+    cat <<EOF >/root/.ssh/config
+    Hostname github.com
+    IdentityFile /root/.ssh/id_github
+    EOF
+    ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+# Edit Kustomize layer in config repo and push changes
+- name: gcr.io/cloud-builders/git
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    echo "Cloning repo ..."
+    git clone --depth 1 git@github.com:mikesparr/gcp-cicd-demo-config
+    echo "Updating image tag version ..."
+    cd gcp-cicd-demo-config
+    ls
+    sed -i "s|newTag: .*|newTag: $SHORT_SHA|" demo-app/overlays/develop/kustomization.yaml
+    echo "Pushing changes to git config repo ..."
+    git config --global user.name mikesparr
+    git config --global user.email msparr@gmail.com
+    git add -A
+    git commit -m "Updated with build ${BUILD_ID} from ${REPO_NAME} commit ${COMMIT_SHA}"
+    git push origin master
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
