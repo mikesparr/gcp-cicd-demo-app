@@ -53,7 +53,7 @@ steps:
   - clone
   - '--depth'
   - '1'
-  - git@github.com:mikesparr/gcp-cicd-demo-app
+  - git@github.com:mikesparr/gcp-cicd-demo-config
   volumes:
   - name: 'ssh'
     path: /root/.ssh
@@ -66,7 +66,7 @@ steps:
   - |
     pwd
     ls
-    ls gcp-cicd-demo-app/*
+    ls gcp-cicd-demo-config/*
 
 
 # Push updated layer to review branch
