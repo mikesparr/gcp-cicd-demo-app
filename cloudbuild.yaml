@@ -1,8 +1,8 @@
 # TODO: 
 # 1. [done] Cloud Build dynamically edit config repo Kustomize layer and pushes (optional manual judgement stage)
 # 2. [done] Add Kustomize patch for Ingress per env (to change subdomain host)
-# 3. Add Github Action to delete file and commit/push on master PR merge trigger (time permitting)
-# 4. Add database example
+# 3. [done] Delete file and commit/push on master PR merge trigger (time permitting)
+# 4. [done] Add database example
 # 5. Add test data Job with initContainer to load test data from bucket (time permitting)
 # 6. Change test domain nameservers to use Cloud DNS (future)
 # 7. Enhance CI script to dynamically add DNS CNAME entry per review app (future)
